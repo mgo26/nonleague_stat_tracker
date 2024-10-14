@@ -95,7 +95,7 @@ def menu_generator(user_team, team_name):
 Select from one of the following options below:
 1. Display your teams attendance figures
 2. Display your teams form guide
-3. Display your teams top goalscorer
+3. Display your teams top five goalscorers
 4. Display your teams biggest win
 5. Display your teams biggest loss
 6. Display your teams league position over the season
@@ -145,8 +145,6 @@ def display_form_guide(team, team_name):
     data = res.read()
     form_json = json.loads(data)
 
-    # print(form_json['form-guide']['teams'])
-
     form_guide = []
     for form_team in form_json['form-guide']['teams']:
         if form_team['id'] == team:
@@ -167,7 +165,8 @@ def display_form_guide(team, team_name):
                 match['result'] = 'D'
             else:
                 match['result'] = 'W'         
-        
+    
+    #Seperate loop to ensure the results are added in the correct order and cleaner code    
     for match in team_form_guide['matches']:
         form_guide.append(match['result'])
         
@@ -176,7 +175,21 @@ def display_form_guide(team, team_name):
 
 #function to display top goalscorers in a bar chart
 def display_top_scorers(team):
-    pass
+    conn.request("GET", f"/goalscorers.json?comp=11&team={team}", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    goalscorers = json.loads(data)
+
+    for player in goalscorers['goalscorers']['players']:
+        goal_counter = 0
+        for game in player['goals']:
+            if game['match']['competition']['id'] == 11:
+                goal_counter += 1
+        
+        if goal_counter == 1:   
+            print(f"{player['first-name']} {player['last-name']} has scored {goal_counter} goal this season.")
+        else:
+            print(f"{player['first-name']} {player['last-name']} has scored {goal_counter} goals this season.")
 
 
 #function to display biggest win
@@ -210,3 +223,8 @@ def display_appearances(team):
         num_of_appearances = len(player['appearances'])
         print(player['first-name'] + ' ' + player['last-name'])
         print(num_of_appearances)
+        
+        
+#function to check if user wants to return to main menu
+def back_to_menu():
+    pass
