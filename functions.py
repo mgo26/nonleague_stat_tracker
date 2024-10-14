@@ -81,14 +81,15 @@ Please type the name of your team:
             if team_key in teams_dict:
                 print(f'You have selected {team_key}!')
                 user_team = teams_dict[team_key]
-                menu_generator(user_team)  
+                team_name = team_key
+                menu_generator(user_team, team_name)  
             else:
                 'Please choose from the available teams listed'
         
 
 
 #generates a menu for the user to choose which option they require
-def menu_generator(user_team):
+def menu_generator(user_team, team_name):
     while True:
         menu = int(input('''
 Select from one of the following options below:
@@ -107,7 +108,7 @@ Make your selection: '''))
         if menu == 1:
             display_attendance(user_team)
         elif menu == 2:
-            display_form_guide(user_team)
+            display_form_guide(user_team, team_name)
         elif menu == 3:
             display_top_scorers(user_team)
         elif menu == 4:
@@ -127,12 +128,9 @@ Make your selection: '''))
 #function to display team attendance in a graph
 def display_attendance(team):
     conn.request("GET", f"/attendances.json?team={team}", headers=headers)
-
     res = conn.getresponse()
     data = res.read()
     attendance_json = json.loads(data)
-
-    print(attendance_json['attendances']['matches'])
 
     for game in attendance_json['attendances']['matches']:
         print(game['away-team']['name'])
@@ -140,9 +138,40 @@ def display_attendance(team):
         print(game['date'])
 
 
-#function to display last five match results
-def display_form_guide(team):
-    pass
+#function to display last six match results
+def display_form_guide(team, team_name):
+    conn.request("GET", f"/form-guide.json?team={team}", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    form_json = json.loads(data)
+
+    # print(form_json['form-guide']['teams'])
+
+    form_guide = []
+    for form_team in form_json['form-guide']['teams']:
+        if form_team['id'] == team:
+            team_form_guide = form_team
+            
+    for match in team_form_guide['matches']:
+        if match['home-team']['name'] == team_name:
+            if match['home-team']['score'] > match['away-team']['score']:
+                match['result'] = 'W'
+            elif match['home-team']['score'] == match['away-team']['score']:
+                match['result'] = 'D'
+            else:
+                match['result'] = 'L'
+        else:
+            if match['home-team']['score'] > match['away-team']['score']:
+                match['result'] = 'L'
+            elif match['home-team']['score'] == match['away-team']['score']:
+                match['result'] = 'D'
+            else:
+                match['result'] = 'W'         
+        
+    for match in team_form_guide['matches']:
+        form_guide.append(match['result'])
+        
+    print(' '.join(form_guide))
 
 
 #function to display top goalscorers in a bar chart
