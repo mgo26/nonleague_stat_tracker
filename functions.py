@@ -126,7 +126,18 @@ Make your selection: '''))
 
 #function to display team attendance in a graph
 def display_attendance(team):
-    pass
+    conn.request("GET", f"/attendances.json?team={team}", headers=headers)
+
+    res = conn.getresponse()
+    data = res.read()
+    attendance_json = json.loads(data)
+
+    print(attendance_json['attendances']['matches'])
+
+    for game in attendance_json['attendances']['matches']:
+        print(game['away-team']['name'])
+        print(game['attendance'])
+        print(game['date'])
 
 
 #function to display last five match results
