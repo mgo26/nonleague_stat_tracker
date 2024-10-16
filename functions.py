@@ -10,25 +10,6 @@ headers = {
     'x-rapidapi-host': "football-web-pages1.p.rapidapi.com"
 }
 
-# conn.request("GET", "/appearances.json?team=258", headers=headers)
-
-# #Isthmian Premier Div is comp=11
-# #Dulwich team=258
-# res = conn.getresponse()
-# data = res.read()
-# # print(data.decode("utf-8"))
-
-# parse_json = json.loads(data)
-
-# # print(parse_json['appearances']['players'][])
-
-# players = parse_json['appearances']['players']
-
-# for player in players:
-#     num_of_appearances = len(player['appearances'])
-#     print(player['first-name'] + ' ' + player['last-name'])
-#     print(num_of_appearances)
-    
 
 class Functions:
 
@@ -112,9 +93,9 @@ Make your selection: '''))
         elif menu == 3:
             display_top_scorers(user_team)
         elif menu == 4:
-            display_big_win(user_team)
+            display_big_win(user_team, team_name)
         elif menu == 5:
-            display_big_loss(user_team)
+            display_big_loss(user_team, team_name)
         elif menu == 6:
             display_position_graph(user_team)
         elif menu == 7:
@@ -193,15 +174,47 @@ def display_top_scorers(team):
 
 
 #function to display biggest win
-def display_big_win(team):
-    pass
+def display_big_win(team, team_name):
+    
+    conn.request("GET", f"/records.json?team={team}", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    records = json.loads(data)
+
+    for record in records['records']['records']:
+        if record['description'] == 'Biggest Victory' and record['type'] == 'All Matches':
+            if record['matches'][0]['home-team']['id'] == team:
+                home_score = record['matches'][0]['home-team']['score']
+                away_score = record['matches'][0]['away-team']['score']
+                opposition = record['matches'][0]['away-team']['name']
+                print(f'{team_name} defeated {opposition} {home_score} - {away_score}')
+            else:
+                home_score = record['matches'][0]['home-team']['score']
+                away_score = record['matches'][0]['away-team']['score']
+                opposition = record['matches'][0]['home-team']['name']
+                print(f'{team_name} defeated {opposition} {away_score} - {home_score}')
 
 
 
 #function to display biggest loss
-def display_big_loss(team):
-    pass
+def display_big_loss(team, team_name):
+    conn.request("GET", "/records.json?team=258", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    records = json.loads(data)
 
+    for record in records['records']['records']:
+        if record['description'] == 'Heaviest Defeat' and record['type'] == 'All Matches':
+            if record['matches'][0]['home-team']['id'] == team:
+                home_score = record['matches'][0]['home-team']['score']
+                away_score = record['matches'][0]['away-team']['score']
+                opposition = record['matches'][0]['away-team']['name']
+                print(f'{team_name} lost to {opposition} {away_score} - {home_score}')
+            else:
+                home_score = record['matches'][0]['home-team']['score']
+                away_score = record['matches'][0]['away-team']['score']
+                opposition = record['matches'][0]['home-team']['name']
+                print(f'{team_name} lost to {opposition} {home_score} - {away_score}')
 
 #function to display league position in line graph
 def display_position_graph(team):
