@@ -1,6 +1,7 @@
 import json
 import ssl
 import http.client
+import matplotlib.pyplot as plt
 
 context = ssl._create_unverified_context()
 conn = http.client.HTTPSConnection("football-web-pages1.p.rapidapi.com", context=context)
@@ -97,7 +98,7 @@ Make your selection: '''))
         elif menu == 5:
             display_big_loss(user_team, team_name)
         elif menu == 6:
-            display_position_graph(user_team)
+            display_position_graph(user_team, team_name)
         elif menu == 7:
             display_appearances(user_team)
         elif menu == 8:
@@ -217,8 +218,35 @@ def display_big_loss(team, team_name):
                 print(f'{team_name} lost to {opposition} {home_score} - {away_score}')
 
 #function to display league position in line graph
-def display_position_graph(team):
-    pass
+def display_position_graph(team, team_name):
+    conn.request("GET", f"/league-progress.json?team={team}", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    league_progress = json.loads(data)
+
+    league_position = []
+    games_played = []
+
+    for game in league_progress['league-progress']['progress']:
+        league_position.append(game['position'])
+        games_played.append(game['played'])
+        
+
+    fig, ax = plt.subplots()
+    ax.plot(games_played, league_position, linewidth=3)
+
+    #Set title and label axes
+    ax.set_title(f'League Position of {team_name} over time', fontsize=24)
+    ax.set_xlabel('Games played', fontsize=14)
+    ax.set_ylabel('League Position', fontsize=14)
+    # ax.set_xticklabels(games_played.astype(int))
+
+    #set the size of tick labels
+    ax.tick_params(labelsize=14)
+
+    plt.gca().invert_yaxis()
+
+    plt.show()
 
 
 def display_appearances(team):
