@@ -248,6 +248,7 @@ def display_position_graph(team, team_name):
 
     plt.show()
 
+    back_to_menu_check()
 
 def display_appearances(team):
     conn.request("GET", f"/appearances.json?team={team}", headers=headers)
@@ -265,7 +266,18 @@ def display_appearances(team):
         print(player['first-name'] + ' ' + player['last-name'])
         print(num_of_appearances)
         
-        
+    back_to_menu_check()
+
+#check if player wants to return to menu
+def back_to_menu_check():
+    while True:
+        user_choice = input('Do you want to return to menu? (y/n)')
+        if user_choice.lower() == 'y':
+            back_to_menu()
+        elif user_choice.lower() == 'n':
+            exit()
+        else:
+            "Please enter either 'y' or 'n'"
 #function to check if user wants to return to main menu
-def back_to_menu():
-    pass
+# def back_to_menu():
+#     menu_generator()
