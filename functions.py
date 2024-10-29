@@ -194,6 +194,8 @@ def display_big_win(team, team_name):
                 away_score = record['matches'][0]['away-team']['score']
                 opposition = record['matches'][0]['home-team']['name']
                 print(f'{team_name} defeated {opposition} {away_score} - {home_score}')
+                
+    back_to_menu_check(team, team_name)
 
 
 
@@ -269,15 +271,17 @@ def display_appearances(team):
     back_to_menu_check()
 
 #check if player wants to return to menu
-def back_to_menu_check():
+def back_to_menu_check(user_team, team_name):
     while True:
-        user_choice = input('Do you want to return to menu? (y/n)')
+        user_choice = input('Do you want to return to menu? (y/n): ')
         if user_choice.lower() == 'y':
-            back_to_menu()
+            back_to_menu(user_team, team_name)
         elif user_choice.lower() == 'n':
             exit()
         else:
             "Please enter either 'y' or 'n'"
+            
+            
 #function to check if user wants to return to main menu
-# def back_to_menu():
-#     menu_generator()
+def back_to_menu(user_team, team_name):   
+    menu_generator(user_team, team_name)
