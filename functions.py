@@ -13,61 +13,72 @@ headers = {
 
 
 class Functions:
-
-#generates a menu to select a team
-    def team_picker():
-        conn.request("GET", "/teams.json?comp=11", headers=headers)
+    
+    #function to generate list of all available leagues
+    def league_picker():
+        conn.request("GET", "/competitions.json?include=rounds", headers=headers)
 
         res = conn.getresponse()
         data = res.read()
 
-        teams_json = json.loads(data)
-        teams = teams_json['teams']
-
-        teams_dict = {}
-
-        for team in teams:
-            teams_dict[team['full-name']] = team['id']
-        #select a team from the list, store team id in a dict
-        #get team id from dict using team as key
-        #return team id for use in api link
+        comps_json = json.loads(data)
         
+        league_dict = {}
+        for comp in comps_json['competitions']:
+            league_dict[comp['generic-name']] = comp['id']
+
         while True:
-            team_key = input('''
-Select your team from the Isthmian Premier League:
-1.\tBillericay Town
-2.\tBognor Regis Town
-3.\tBowers & Pitsea
-4.\tCanvey Island
-5.\tCarshalton Athletic
-6.\tChatham Town
-7.\tCheshunt
-8.\tChichester City
-9.\tCray Valley PM
-10.\tCray Wanderers
-11.\tDartford
-12.\tDover Athletic
-13.\tDulwich Hamlet
-14.\tFolkestone Invicta
-15.\tHashtag United
-16.\tHastings United
-17.\tHendon
-18.\tHorsham
-19.\tLewes
-20.\tPotters Bar Town
-21.\tWhitehawk
-22.\tWingate & Finchley
-
-Please type the name of your team: 
-''')
-            if team_key in teams_dict:
-                print(f'You have selected {team_key}!')
-                user_team = teams_dict[team_key]
-                team_name = team_key
-                menu_generator(user_team, team_name)  
+            league_counter = 1
+            for comp in comps_json['competitions']:
+                print(f"{league_counter}: {comp['generic-name']}")
+                league_counter += 1
+            
+            league_key = input('Please choose a league from the list above: ')
+            if league_key in league_dict:
+                print(f'You have selected {league_key}')
+                league_name = league_key
+                league = league_dict[league_key]
+                team_picker(league, league_name)
             else:
-                'Please choose from the available teams listed'
-        
+                print('Please ensure you spell the name correctly!\n')
+
+
+#generates a menu to select a team
+def team_picker(league, league_name):
+    conn.request("GET", f"/teams.json?comp={league}", headers=headers)
+
+    res = conn.getresponse()
+    data = res.read()
+
+    teams_json = json.loads(data)
+    teams = teams_json['teams']
+
+    teams_dict = {}
+
+    for team in teams:
+        teams_dict[team['full-name']] = team['id']
+    #select a team from the list, store team id in a dict
+    #get team id from dict using team as key
+    #return team id for use in api link
+    
+    print(f'Welcome to the {league_name}')
+    
+    while True:
+        team_counter = 1
+        for team in teams_dict:
+            print(f'{team_counter}: {team}')
+            team_counter += 1
+            
+        team_key = input('Please enter the name of your chosen team: ')
+            
+        if team_key in teams_dict:
+            print(f'You have selected {team_key}!')
+            user_team = teams_dict[team_key]
+            team_name = team_key
+            menu_generator(user_team, team_name)  
+        else:
+            'Please choose from the available teams listed'
+    
 
 
 #generates a menu for the user to choose which option they require
@@ -108,7 +119,7 @@ Make your selection: '''))
     
 
 #function to display team attendance in a graph
-def display_attendance(team):
+def display_attendance(team, team_name):
     conn.request("GET", f"/attendances.json?team={team}", headers=headers)
     res = conn.getresponse()
     data = res.read()
@@ -118,6 +129,8 @@ def display_attendance(team):
         print(game['away-team']['name'])
         print(game['attendance'])
         print(game['date'])
+        
+    back_to_menu_check(team, team_name)
 
 
 #function to display last six match results
@@ -154,9 +167,10 @@ def display_form_guide(team, team_name):
         
     print(' '.join(form_guide))
 
+    back_to_menu_check(team, team_name)
 
 #function to display top goalscorers in a bar chart
-def display_top_scorers(team):
+def display_top_scorers(team, team_name):
     conn.request("GET", f"/goalscorers.json?comp=11&team={team}", headers=headers)
     res = conn.getresponse()
     data = res.read()
@@ -173,6 +187,7 @@ def display_top_scorers(team):
         else:
             print(f"{player['first-name']} {player['last-name']} has scored {goal_counter} goals this season.")
 
+    back_to_menu_check(team, team_name)
 
 #function to display biggest win
 def display_big_win(team, team_name):
@@ -218,6 +233,8 @@ def display_big_loss(team, team_name):
                 away_score = record['matches'][0]['away-team']['score']
                 opposition = record['matches'][0]['home-team']['name']
                 print(f'{team_name} lost to {opposition} {home_score} - {away_score}')
+                
+    back_to_menu_check(team, team_name)
 
 #function to display league position in line graph
 def display_position_graph(team, team_name):
@@ -250,9 +267,9 @@ def display_position_graph(team, team_name):
 
     plt.show()
 
-    back_to_menu_check()
+    back_to_menu_check(team, team_name)
 
-def display_appearances(team):
+def display_appearances(team, team_name):
     conn.request("GET", f"/appearances.json?team={team}", headers=headers)
 
     #Isthmian Premier Div is comp=11
@@ -268,7 +285,7 @@ def display_appearances(team):
         print(player['first-name'] + ' ' + player['last-name'])
         print(num_of_appearances)
         
-    back_to_menu_check()
+    back_to_menu_check(team, team_name)
 
 #check if player wants to return to menu
 def back_to_menu_check(user_team, team_name):
